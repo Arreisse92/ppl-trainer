@@ -5,19 +5,25 @@
 <title>PPL Exam Trainer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: Arial; max-width: 650px; margin: auto; padding: 20px; }
+body { font-family: Arial; max-width: 700px; margin: auto; padding: 20px; }
 h2 { text-align: center; }
-button { padding: 12px; margin-top: 10px; width: 100%; font-size: 16px; }
+button { padding: 10px; margin: 8px 0; width: 100%; font-size: 16px; }
 .hidden { display: none; }
-.option { margin: 10px 0; }
+.option { margin: 8px 0; }
 .question { font-size: 18px; margin-bottom: 20px; }
+.topbar { margin-bottom: 20px; }
+.review-box { margin-top: 20px; }
 </style>
 </head>
 <body>
 
 <h2>PPL Exam Trainer</h2>
 
-<div id="startScreen">
+<div class="topbar">
+  <button onclick="goHome()">🏠 Main Menu</button>
+</div>
+
+<div id="homeScreen">
   <h3>Select Subject</h3>
   <button onclick="startExam('meteorology')">Meteorology</button>
   <button onclick="startExam('airlaw')">Air Law</button>
@@ -44,6 +50,11 @@ correct: 1
 question: "What happens to air pressure as altitude increases?",
 options: ["It increases", "It decreases", "It remains constant", "It fluctuates"],
 correct: 1
+},
+{
+question: "Fog is formed when:",
+options: ["Warm air rises rapidly", "Air reaches its dew point near the surface", "Pressure increases rapidly", "Cold air sinks quickly"],
+correct: 1
 }
 ],
 
@@ -54,7 +65,7 @@ options: ["Air Traffic Control", "Aircraft owner", "Pilot in Command", "Handling
 correct: 2
 },
 {
-question: "Minimum VFR visibility in controlled airspace below 3000 ft is:",
+question: "Minimum VFR visibility below 3000 ft in controlled airspace is:",
 options: ["5 km", "8 km", "3 km", "1.5 km"],
 correct: 0
 }
@@ -66,11 +77,17 @@ let selectedQuestions = [];
 let current = 0;
 let score = 0;
 let userAnswers = [];
+let currentSubject = "";
 
 function startExam(subject) {
-  selectedQuestions = shuffle(questionBank[subject]).slice(0, 10);
-  document.getElementById("startScreen").classList.add("hidden");
+  currentSubject = subject;
+  selectedQuestions = shuffle([...questionBank[subject]]);
+  current = 0;
+  score = 0;
+  userAnswers = [];
+  document.getElementById("homeScreen").classList.add("hidden");
   document.getElementById("quizScreen").classList.remove("hidden");
+  document.getElementById("resultScreen").classList.add("hidden");
   loadQuestion();
 }
 
@@ -92,10 +109,15 @@ function nextQuestion() {
   const selected = document.querySelector('input[name="option"]:checked');
   if (!selected) return alert("Please select an answer.");
 
-  userAnswers.push(parseInt(selected.value));
-  if (parseInt(selected.value) === selectedQuestions[current].correct) score++;
+  const answerIndex = parseInt(selected.value);
+  userAnswers.push(answerIndex);
+
+  if (answerIndex === selectedQuestions[current].correct) {
+    score++;
+  }
 
   current++;
+
   if (current < selectedQuestions.length) {
     loadQuestion();
   } else {
@@ -108,17 +130,33 @@ function showResult() {
   const percent = Math.round((score/selectedQuestions.length)*100);
 
   let review = `<h3>Final Score: ${score}/${selectedQuestions.length} (${percent}%)</h3>`;
+  review += `<div class="review-box">`;
 
   selectedQuestions.forEach((q,i)=>{
     if(userAnswers[i] !== q.correct){
       review += `
-      <p><strong>Incorrect:</strong> ${q.question}<br>
-      Correct answer: ${q.options[q.correct]}</p>`;
+      <p>
+      <strong>Question:</strong> ${q.question}<br>
+      <strong>Your answer:</strong> ${q.options[userAnswers[i]]}<br>
+      <strong>Correct answer:</strong> ${q.options[q.correct]}
+      </p>`;
     }
   });
 
+  if(score === selectedQuestions.length){
+    review += "<p><strong>Perfect score. Well done.</strong></p>";
+  }
+
+  review += "</div>";
+
   document.getElementById("resultScreen").innerHTML = review;
   document.getElementById("resultScreen").classList.remove("hidden");
+}
+
+function goHome() {
+  document.getElementById("homeScreen").classList.remove("hidden");
+  document.getElementById("quizScreen").classList.add("hidden");
+  document.getElementById("resultScreen").classList.add("hidden");
 }
 
 function shuffle(array) {
