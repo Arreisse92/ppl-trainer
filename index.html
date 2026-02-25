@@ -2,40 +2,42 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>PPL Trainer</title>
+  <title>PPL Exam Trainer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
-    .question { font-size: 18px; margin-bottom: 15px; }
-    .option { margin: 8px 0; }
-    button { padding: 10px; margin-top: 15px; width: 100%; }
+    body { font-family: Arial; max-width: 650px; margin: auto; padding: 20px; }
+    h2 { text-align: center; }
+    .question { font-size: 18px; margin-bottom: 20px; }
+    .option { margin: 10px 0; }
+    button { padding: 12px; margin-top: 20px; width: 100%; font-size: 16px; }
     .hidden { display: none; }
+    .result-box { margin-top: 20px; }
   </style>
 </head>
 <body>
 
-<h2>PPL Meteorology Quiz</h2>
+<h2>PPL Meteorology Examination</h2>
 
 <div id="quiz"></div>
-<button id="nextBtn" onclick="nextQuestion()">Nästa</button>
+<button id="nextBtn" onclick="nextQuestion()">Next</button>
 
 <div id="result" class="hidden"></div>
 
 <script>
 const questions = [
 {
-question: "Vilken molntyp förknippas oftast med åska?",
+question: "Which cloud type is most commonly associated with thunderstorms?",
 options: ["Stratus", "Cumulonimbus", "Cirrus", "Altostratus"],
 correct: 1
 },
 {
-question: "Vad händer med lufttrycket när höjden ökar?",
-options: ["Ökar", "Minskar", "Är konstant", "Varierar slumpmässigt"],
+question: "What happens to air pressure as altitude increases?",
+options: ["It increases", "It decreases", "It remains constant", "It fluctuates randomly"],
 correct: 1
 },
 {
-question: "En varmfront ger oftast:",
-options: ["Kortvariga kraftiga skurar", "Långvarigt ihållande regn", "Klar himmel", "Kraftiga byvindar"],
+question: "A warm front is typically associated with:",
+options: ["Short intense showers", "Prolonged steady precipitation", "Clear skies", "Strong gusty winds"],
 correct: 1
 }
 ];
@@ -47,7 +49,10 @@ let userAnswers = [];
 function loadQuestion() {
   const q = questions[current];
   document.getElementById("quiz").innerHTML = `
-    <div class="question">Fråga ${current+1} av ${questions.length}<br><br>${q.question}</div>
+    <div class="question">
+      Question ${current+1} of ${questions.length}<br><br>
+      ${q.question}
+    </div>
     ${q.options.map((opt,i)=>`
       <div class="option">
         <input type="radio" name="option" value="${i}"> ${opt}
@@ -57,7 +62,7 @@ function loadQuestion() {
 
 function nextQuestion() {
   const selected = document.querySelector('input[name="option"]:checked');
-  if (!selected) return alert("Välj ett svar.");
+  if (!selected) return alert("Please select an answer.");
 
   userAnswers.push(parseInt(selected.value));
   if (parseInt(selected.value) === questions[current].correct) score++;
@@ -75,17 +80,22 @@ function showResult() {
   document.getElementById("nextBtn").classList.add("hidden");
   const percent = Math.round((score/questions.length)*100);
 
-  let review = "";
+  let review = "<div class='result-box'>";
+  review += `<h3>Final Score: ${score}/${questions.length} (${percent}%)</h3>`;
+
   questions.forEach((q,i)=>{
     if(userAnswers[i] !== q.correct){
-      review += `<p><b>Fel:</b> ${q.question}<br>
-      Rätt svar: ${q.options[q.correct]}</p>`;
+      review += `
+      <p>
+      <strong>Incorrect:</strong> ${q.question}<br>
+      Correct answer: ${q.options[q.correct]}
+      </p>`;
     }
   });
 
-  document.getElementById("result").innerHTML =
-    `<h3>Resultat: ${score}/${questions.length} (${percent}%)</h3>
-     ${review}`;
+  review += "</div>";
+
+  document.getElementById("result").innerHTML = review;
   document.getElementById("result").classList.remove("hidden");
 }
 
