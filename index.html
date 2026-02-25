@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PPL Trainer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
+    .question { font-size: 18px; margin-bottom: 15px; }
+    .option { margin: 8px 0; }
+    button { padding: 10px; margin-top: 15px; width: 100%; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<h2>PPL Meteorology Quiz</h2>
+
+<div id="quiz"></div>
+<button id="nextBtn" onclick="nextQuestion()">Nästa</button>
+
+<div id="result" class="hidden"></div>
+
+<script>
+const questions = [
+{
+question: "Vilken molntyp förknippas oftast med åska?",
+options: ["Stratus", "Cumulonimbus", "Cirrus", "Altostratus"],
+correct: 1
+},
+{
+question: "Vad händer med lufttrycket när höjden ökar?",
+options: ["Ökar", "Minskar", "Är konstant", "Varierar slumpmässigt"],
+correct: 1
+},
+{
+question: "En varmfront ger oftast:",
+options: ["Kortvariga kraftiga skurar", "Långvarigt ihållande regn", "Klar himmel", "Kraftiga byvindar"],
+correct: 1
+}
+];
+
+let current = 0;
+let score = 0;
+let userAnswers = [];
+
+function loadQuestion() {
+  const q = questions[current];
+  document.getElementById("quiz").innerHTML = `
+    <div class="question">Fråga ${current+1} av ${questions.length}<br><br>${q.question}</div>
+    ${q.options.map((opt,i)=>`
+      <div class="option">
+        <input type="radio" name="option" value="${i}"> ${opt}
+      </div>`).join("")}
+  `;
+}
+
+function nextQuestion() {
+  const selected = document.querySelector('input[name="option"]:checked');
+  if (!selected) return alert("Välj ett svar.");
+
+  userAnswers.push(parseInt(selected.value));
+  if (parseInt(selected.value) === questions[current].correct) score++;
+
+  current++;
+  if (current < questions.length) {
+    loadQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  document.getElementById("quiz").classList.add("hidden");
+  document.getElementById("nextBtn").classList.add("hidden");
+  const percent = Math.round((score/questions.length)*100);
+
+  let review = "";
+  questions.forEach((q,i)=>{
+    if(userAnswers[i] !== q.correct){
+      review += `<p><b>Fel:</b> ${q.question}<br>
+      Rätt svar: ${q.options[q.correct]}</p>`;
+    }
+  });
+
+  document.getElementById("result").innerHTML =
+    `<h3>Resultat: ${score}/${questions.length} (${percent}%)</h3>
+     ${review}`;
+  document.getElementById("result").classList.remove("hidden");
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
