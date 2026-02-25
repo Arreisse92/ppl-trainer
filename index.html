@@ -1,56 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>PPL Exam Trainer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial; max-width: 650px; margin: auto; padding: 20px; }
-    h2 { text-align: center; }
-    .question { font-size: 18px; margin-bottom: 20px; }
-    .option { margin: 10px 0; }
-    button { padding: 12px; margin-top: 20px; width: 100%; font-size: 16px; }
-    .hidden { display: none; }
-    .result-box { margin-top: 20px; }
-  </style>
+<meta charset="UTF-8">
+<title>PPL Exam Trainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial; max-width: 650px; margin: auto; padding: 20px; }
+h2 { text-align: center; }
+button { padding: 12px; margin-top: 10px; width: 100%; font-size: 16px; }
+.hidden { display: none; }
+.option { margin: 10px 0; }
+.question { font-size: 18px; margin-bottom: 20px; }
+</style>
 </head>
 <body>
 
-<h2>PPL Meteorology Examination</h2>
+<h2>PPL Exam Trainer</h2>
 
-<div id="quiz"></div>
-<button id="nextBtn" onclick="nextQuestion()">Next</button>
+<div id="startScreen">
+  <h3>Select Subject</h3>
+  <button onclick="startExam('meteorology')">Meteorology</button>
+  <button onclick="startExam('airlaw')">Air Law</button>
+</div>
 
-<div id="result" class="hidden"></div>
+<div id="quizScreen" class="hidden">
+  <div id="quiz"></div>
+  <button onclick="nextQuestion()">Next</button>
+</div>
+
+<div id="resultScreen" class="hidden"></div>
 
 <script>
-const questions = [
+
+const questionBank = {
+
+meteorology: [
 {
-question: "Which cloud type is most commonly associated with thunderstorms?",
+question: "Which cloud type is associated with thunderstorms?",
 options: ["Stratus", "Cumulonimbus", "Cirrus", "Altostratus"],
 correct: 1
 },
 {
 question: "What happens to air pressure as altitude increases?",
-options: ["It increases", "It decreases", "It remains constant", "It fluctuates randomly"],
-correct: 1
-},
-{
-question: "A warm front is typically associated with:",
-options: ["Short intense showers", "Prolonged steady precipitation", "Clear skies", "Strong gusty winds"],
+options: ["It increases", "It decreases", "It remains constant", "It fluctuates"],
 correct: 1
 }
-];
+],
 
+airlaw: [
+{
+question: "Who is responsible for the safe conduct of the flight?",
+options: ["Air Traffic Control", "Aircraft owner", "Pilot in Command", "Handling agent"],
+correct: 2
+},
+{
+question: "Minimum VFR visibility in controlled airspace below 3000 ft is:",
+options: ["5 km", "8 km", "3 km", "1.5 km"],
+correct: 0
+}
+]
+
+};
+
+let selectedQuestions = [];
 let current = 0;
 let score = 0;
 let userAnswers = [];
 
+function startExam(subject) {
+  selectedQuestions = shuffle(questionBank[subject]).slice(0, 10);
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  loadQuestion();
+}
+
 function loadQuestion() {
-  const q = questions[current];
+  const q = selectedQuestions[current];
   document.getElementById("quiz").innerHTML = `
     <div class="question">
-      Question ${current+1} of ${questions.length}<br><br>
+      Question ${current+1} of ${selectedQuestions.length}<br><br>
       ${q.question}
     </div>
     ${q.options.map((opt,i)=>`
@@ -65,10 +93,10 @@ function nextQuestion() {
   if (!selected) return alert("Please select an answer.");
 
   userAnswers.push(parseInt(selected.value));
-  if (parseInt(selected.value) === questions[current].correct) score++;
+  if (parseInt(selected.value) === selectedQuestions[current].correct) score++;
 
   current++;
-  if (current < questions.length) {
+  if (current < selectedQuestions.length) {
     loadQuestion();
   } else {
     showResult();
@@ -76,30 +104,27 @@ function nextQuestion() {
 }
 
 function showResult() {
-  document.getElementById("quiz").classList.add("hidden");
-  document.getElementById("nextBtn").classList.add("hidden");
-  const percent = Math.round((score/questions.length)*100);
+  document.getElementById("quizScreen").classList.add("hidden");
+  const percent = Math.round((score/selectedQuestions.length)*100);
 
-  let review = "<div class='result-box'>";
-  review += `<h3>Final Score: ${score}/${questions.length} (${percent}%)</h3>`;
+  let review = `<h3>Final Score: ${score}/${selectedQuestions.length} (${percent}%)</h3>`;
 
-  questions.forEach((q,i)=>{
+  selectedQuestions.forEach((q,i)=>{
     if(userAnswers[i] !== q.correct){
       review += `
-      <p>
-      <strong>Incorrect:</strong> ${q.question}<br>
-      Correct answer: ${q.options[q.correct]}
-      </p>`;
+      <p><strong>Incorrect:</strong> ${q.question}<br>
+      Correct answer: ${q.options[q.correct]}</p>`;
     }
   });
 
-  review += "</div>";
-
-  document.getElementById("result").innerHTML = review;
-  document.getElementById("result").classList.remove("hidden");
+  document.getElementById("resultScreen").innerHTML = review;
+  document.getElementById("resultScreen").classList.remove("hidden");
 }
 
-loadQuestion();
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
 </script>
 
 </body>
